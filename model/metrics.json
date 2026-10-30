@@ -1,0 +1,1 @@
+{"rmse": 21.4, "mae": 15.06, "mape": 1.01, "naive_rmse": 13.87, "naive_mae": 9.13, "train_samples": 4228, "test_samples": 1072, "epochs_run": 45, "params": 31901}

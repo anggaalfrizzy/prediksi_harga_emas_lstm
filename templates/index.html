@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prediksi Harga Emas Harian dengan LSTM</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪙</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+<div id="banner" class="banner" hidden></div>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#atas"><span class="coin">Au</span> Emas LSTM</a>
+    <nav><a href="#riwayat">Riwayat</a><a href="#akurasi">Akurasi</a><a href="#ramalan">Ramalan</a><a href="#model">Cara kerja</a></nav>
+  </div>
+</header>
+
+<section class="hero" id="atas">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Berapa harga emas di hari kerja berikutnya?</h1>
+      <p class="lede">Model LSTM membaca 60 hari terakhir harga emas, lalu menebak harga hari berikutnya.</p>
+      <div class="predict" id="predictCard">
+        <p class="p-label">Prediksi LSTM untuk <b id="pDate">...</b></p>
+        <p class="p-value"><span id="pValue">-</span> <small class="unit"></small></p>
+        <p class="p-sub"><span id="pChip" class="chip" hidden></span> <span id="pBase">Harga terakhir -</span></p>
+        <div id="pSetup" class="p-setup" hidden>
+          <p>Model belum dilatih. Jalankan perintah ini di terminal, lalu muat ulang halaman:</p>
+          <button type="button" class="cmd" id="copyCmd" title="Klik untuk menyalin"><code>python train.py</code><span id="copyTxt">Salin</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="panel hero-chart"><canvas id="heroChart" role="img" aria-label="Grafik harga emas harian sejak 2000"></canvas></div>
+  </div>
+</section>
+
+<main class="wrap">
+  <section id="riwayat">
+    <h2>Riwayat harga</h2>
+    <p class="sub">Pilih rentang waktu, lalu arahkan kursor ke grafik untuk melihat harga tiap hari.</p>
+    <div class="pills" role="group" aria-label="Rentang waktu" id="ranges">
+      <button type="button" data-r="1">1 tahun</button><button type="button" data-r="5">5 tahun</button>
+      <button type="button" data-r="10">10 tahun</button><button type="button" data-r="all" class="on">Semua</button>
+    </div>
+    <div class="tiles">
+      <div class="tile"><span>Tertinggi</span><b id="sHigh">-</b></div>
+      <div class="tile"><span>Terendah</span><b id="sLow">-</b></div>
+      <div class="tile"><span>Rata-rata</span><b id="sAvg">-</b></div>
+      <div class="tile"><span>Perubahan</span><b id="sChg">-</b></div>
+    </div>
+    <div class="panel chart"><canvas id="histChart" role="img" aria-label="Grafik riwayat harga emas"></canvas></div>
+  </section>
+
+  <section id="akurasi">
+    <h2>Seberapa akurat modelnya</h2>
+    <p class="sub">Diuji pada data terbaru yang tidak pernah dilihat saat pelatihan.</p>
+    <div id="evalSetup" class="setup" hidden><b>Model belum dilatih.</b> Jalankan <code>python train.py</code>, lalu muat ulang halaman.</div>
+    <div id="evalBody" hidden>
+      <div class="tiles">
+        <div class="tile"><span>RMSE</span><b id="mRmse">-</b></div>
+        <div class="tile"><span>MAE</span><b id="mMae">-</b></div>
+        <div class="tile"><span>MAPE</span><b id="mMape">-</b></div>
+        <div class="tile"><span>RMSE tebakan "harga kemarin"</span><b id="mNaive">-</b></div>
+      </div>
+      <p id="verdict" class="verdict"></p>
+      <div class="pills" id="evalRanges" role="group" aria-label="Rentang data uji">
+        <button type="button" data-e="120">120 hari terakhir</button><button type="button" data-e="all" class="on">Seluruh data uji</button>
+      </div>
+      <div class="panel chart"><canvas id="evalChart" role="img" aria-label="Harga aktual dan prediksi pada data uji"></canvas></div>
+      <p class="legend"><i class="k amber"></i>Harga aktual <i class="k indigo"></i>Prediksi LSTM</p>
+      <h3>Kurva loss</h3>
+      <div class="panel chart short"><canvas id="lossChart" role="img" aria-label="Kurva loss"></canvas></div>
+    </div>
+  </section>
+
+  <section id="ramalan">
+    <h2>Ramalan beberapa hari ke depan</h2>
+    <p class="sub">Pilih horizon, grafik dan tabel ikut berubah.</p>
+    <div id="fcSetup" class="setup" hidden><b>Ramalan belum tersedia.</b> Latih model dulu dengan <code>python train.py</code>.</div>
+    <div id="fcBody" hidden>
+      <div class="pills" id="horizons" role="group" aria-label="Horizon ramalan">
+        <button type="button" data-d="1">1 hari</button><button type="button" data-d="5">5 hari</button>
+        <button type="button" data-d="10" class="on">10 hari</button><button type="button" data-d="20">20 hari</button><button type="button" data-d="30">30 hari</button>
+      </div>
+      <div class="panel chart"><canvas id="fcChart" role="img" aria-label="Grafik 90 hari terakhir dan ramalan"></canvas></div>
+      <p class="legend"><i class="k amber"></i>Harga aktual <i class="k mint"></i>Ramalan LSTM</p>
+      <div class="panel table-wrap"><table>
+        <thead><tr><th>Tanggal</th><th class="num">Ramalan (<span class="unit"></span>)</th><th class="num">Selisih dari harga terakhir</th></tr></thead>
+        <tbody id="fcRows"></tbody></table></div>
+      <p id="fcMode" class="note"></p>
+    </div>
+  </section>
+
+  <section id="model">
+    <h2>Cara kerja model</h2>
+    <ol class="steps">
+      <li><b>Muat dan bersihkan.</b> Kolom <code>date</code> menjadi index, hari tanpa harga diisi harga sebelumnya, data dimulai dari 2000.</li>
+      <li><b>Skala ke 0&ndash;1.</b> <code>MinMaxScaler</code> dilatih hanya pada data latih agar tidak bocor dari masa depan.</li>
+      <li><b>Windowing.</b> 60 hari terakhir menebak hari ke-61, dalam tensor <code>(samples, 60, 1)</code>.</li>
+      <li><b>Latih LSTM.</b> Adam, loss MSE, dan early stopping.</li>
+      <li><b>Evaluasi.</b> Hasil dikembalikan ke skala harga asli, lalu dihitung RMSE, MAE, MAPE.</li>
+      <li><b>Ramal.</b> Tebakan satu hari dimasukkan kembali ke jendela 60 hari untuk hari berikutnya.</li>
+    </ol>
+    <div class="panel table-wrap arch"><table>
+      <thead><tr><th>Layer</th><th>Output shape</th><th class="num">Parameter</th></tr></thead>
+      <tbody>
+        <tr><td>LSTM (50 unit, return_sequences)</td><td>(None, 60, 50)</td><td class="num">10.400</td></tr>
+        <tr><td>Dropout 0,2</td><td>(None, 60, 50)</td><td class="num">0</td></tr>
+        <tr><td>LSTM (50 unit)</td><td>(None, 50)</td><td class="num">20.200</td></tr>
+        <tr><td>Dropout 0,2</td><td>(None, 50)</td><td class="num">0</td></tr>
+        <tr><td>Dense 25</td><td>(None, 25)</td><td class="num">1.275</td></tr>
+        <tr><td>Dense 1</td><td>(None, 1)</td><td class="num">26</td></tr>
+      </tbody><tfoot><tr><td colspan="2">Total</td><td class="num">31.901</td></tr></tfoot></table></div>
+    <h3>Keterbatasan</h3>
+    <p class="note">Ramalan bertahap mengumpulkan error, jadi makin jauh horizonnya makin kurang pasti. Dataset berakhir pada <b id="endDate">-</b>, sehingga ramalan dihitung dari tanggal itu. Harga emas dipengaruhi banyak faktor yang tidak ada di data ini. Aplikasi ini untuk tugas kuliah dan bukan saran investasi.</p>
+  </section>
+</main>
+<footer class="wrap">Tugas Akhir 04 Pembelajaran Mesin: Prediksi Harga Emas Harian Menggunakan Long Short-Term Memory (LSTM)</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="../static/app.js"></script>
+</body>
+</html>
